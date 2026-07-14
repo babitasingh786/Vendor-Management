@@ -330,13 +330,15 @@ export default function App() {
                 <span className="text-xs text-slate-400 font-medium">Querying active directory datastore...</span>
               </div>
             ) : filteredVendors.length > 0 ? (
-              <table className="w-full text-left border-collapse min-w-[800px]">
+              <table className="w-full text-left border-collapse min-w-[1100px]">
                 <thead>
                   <tr className="border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/20">
                     <th className="px-6 py-4">Company Name</th>
                     <th className="px-6 py-4">Industry Vertical</th>
                     <th className="px-6 py-4">Contact Representative</th>
-                    <th className="px-6 py-4">Contact Email & Phone</th>
+                    <th className="px-6 py-4">Email Address</th>
+                    <th className="px-6 py-4">Mobile Number</th>
+                    <th className="px-6 py-4">Added Date/Time</th>
                     <th className="px-6 py-4">Inbound Stream</th>
                     <th className="px-6 py-4">Attachments</th>
                     <th className="px-6 py-4 text-right">Actions</th>
@@ -385,14 +387,39 @@ export default function App() {
                         </div>
                       </td>
 
-                      {/* Contact details */}
+                      {/* Email Address */}
                       <td className="px-6 py-4">
-                        <div className="flex flex-col gap-0.5">
-                          <a href={`mailto:${vendor.contactEmail}`} className="text-indigo-600 hover:underline text-[11px] font-semibold break-all">
-                            {vendor.contactEmail}
-                          </a>
-                          <span className="text-[10px] text-slate-400 font-semibold">{vendor.contactPhone}</span>
-                        </div>
+                        <a href={`mailto:${vendor.contactEmail}`} className="text-indigo-600 hover:underline text-[11px] font-semibold break-all">
+                          {vendor.contactEmail}
+                        </a>
+                      </td>
+
+                      {/* Mobile Number */}
+                      <td className="px-6 py-4 text-slate-600 font-semibold text-[11px] whitespace-nowrap">
+                        {vendor.contactPhone || <span className="text-slate-400 italic font-normal">—</span>}
+                      </td>
+
+                      {/* Added Date/Time */}
+                      <td className="px-6 py-4 text-[11px] text-slate-500 whitespace-nowrap">
+                        {vendor.createdAt ? (
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-slate-700">
+                              {new Date(vendor.createdAt).toLocaleDateString(undefined, {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {new Date(vendor.createdAt).toLocaleTimeString(undefined, {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">Unknown</span>
+                        )}
                       </td>
 
                       {/* Source Channel */}

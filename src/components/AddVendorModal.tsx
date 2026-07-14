@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { X, Sparkles, AlertCircle, RefreshCw, Plus, CheckCircle, HelpCircle } from 'lucide-react';
+import { X, Sparkles, AlertCircle, RefreshCw, Plus, CheckCircle, HelpCircle, UploadCloud, Paperclip, FileText, Trash2 } from 'lucide-react';
 import { Vendor } from '../types';
 
 interface AddVendorModalProps {
@@ -26,6 +26,62 @@ export default function AddVendorModal({ isOpen, onClose, onAddComplete }: AddVe
   const [products, setProducts] = useState('');
   const [description, setDescription] = useState('');
   const [rawBrochureText, setRawBrochureText] = useState('');
+
+  // Manual Attachments states
+  const [manualAttachments, setManualAttachments] = useState<{ id: string; name: string; type: string; size: string; url?: string; contentSummary?: string }[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // File processors
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      processFiles(e.target.files);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
+  const processFiles = (fileList: FileList) => {
+    Array.from(fileList).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Url = reader.result as string;
+        let formattedSize = `${(file.size / 1024).toFixed(1)} KB`;
+        if (file.size > 1024 * 1024) {
+          formattedSize = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+        }
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'bin';
+        const newAtt = {
+          id: `att_man_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          name: file.name,
+          type: ext,
+          size: formattedSize,
+          url: base64Url,
+          contentSummary: `Manually attached ${file.name} document for vendor capabilities verification.`
+        };
+        setManualAttachments(prev => [...prev, newAtt]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeAttachment = (id: string) => {
+    setManualAttachments(prev => prev.filter(att => att.id !== id));
+  };
 
   // AI Paste state
   const [aiPasteText, setAiPasteText] = useState('');
@@ -110,7 +166,8 @@ export default function AddVendorModal({ isOpen, onClose, onAddComplete }: AddVe
           website,
           products: products.split(',').map(p => p.trim()).filter(Boolean),
           description,
-          rawBrochureText
+          rawBrochureText,
+          attachments: manualAttachments
         })
       });
 
@@ -145,6 +202,8 @@ export default function AddVendorModal({ isOpen, onClose, onAddComplete }: AddVe
     setAiPasteText('');
     setAiError(null);
     setFormError(null);
+    setManualAttachments([]);
+    setIsDragging(false);
     setActiveTab('ai');
   };
 
@@ -408,6 +467,86 @@ Acme BioTech Labs is a leader in clinical services. Contact our director David M
                   className="w-full border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden rounded-lg p-3 text-xs font-mono text-slate-500"
                   placeholder="Optional: raw text brochure context..."
                 />
+              </div>
+
+              {/* Document Attachments Field */}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                  Documents & Brochures Attachments
+                  <span className="text-[9px] font-medium bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-sm normal-case">
+                    PDF, DOCX, PNG, TXT
+                  </span>
+                </label>
+                
+                {/* Drag and Drop Zone */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+                    isDragging
+                      ? 'border-indigo-600 bg-indigo-50/50'
+                      : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    id="manual-file-upload"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <UploadCloud className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-700">
+                    Drag & drop files here, or{' '}
+                    <label
+                      htmlFor="manual-file-upload"
+                      className="text-indigo-600 hover:text-indigo-700 cursor-pointer hover:underline font-bold"
+                    >
+                      browse
+                    </label>
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                    Attach sales decks, technical specifications sheets, or product list catalogs.
+                  </p>
+                </div>
+
+                {/* Staged Attachments List */}
+                {manualAttachments.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Staged Files ({manualAttachments.length})
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {manualAttachments.map((att) => (
+                        <div
+                          key={att.id}
+                          className="flex items-center justify-between p-2.5 bg-white border border-slate-100 rounded-xl shadow-xs"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileText className="w-4 h-4 text-indigo-500 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-700 truncate" title={att.name}>
+                                {att.name}
+                              </p>
+                              <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                {att.type} • {att.size}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(att.id)}
+                            className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            title="Remove attachment"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {formError && (

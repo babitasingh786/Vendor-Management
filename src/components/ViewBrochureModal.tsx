@@ -52,6 +52,19 @@ Generated via VendorSync on ${new Date(vendor.createdAt).toLocaleDateString()}`;
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadAttachment = (att: any) => {
+    if (att.url) {
+      const link = document.createElement('a');
+      link.href = att.url;
+      link.download = att.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      handleDownloadMockPDF();
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-900/65 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-3xl border border-slate-100 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -181,7 +194,7 @@ Generated via VendorSync on ${new Date(vendor.createdAt).toLocaleDateString()}`;
                     {vendor.attachments.map((att) => (
                       <div 
                         key={att.id} 
-                        onClick={handleDownloadMockPDF}
+                        onClick={() => handleDownloadAttachment(att)}
                         className="border border-slate-100 bg-white hover:bg-slate-50 rounded-xl p-3 flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-2.5">

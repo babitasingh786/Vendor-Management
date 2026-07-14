@@ -440,7 +440,8 @@ app.post('/api/vendors/manual', (req, res) => {
     description,
     website,
     products,
-    rawBrochureText
+    rawBrochureText,
+    attachments
   } = req.body;
 
   if (!companyName || !industry || !contactName) {
@@ -468,7 +469,7 @@ app.post('/api/vendors/manual', (req, res) => {
     products: formattedProducts,
     createdAt: new Date().toISOString(),
     rawBrochureText: rawBrochureText || '',
-    attachments: [],
+    attachments: attachments || [],
     statusHistory: [
       { status: 'Received', label: 'Brochure Received', message: 'Vendor created manually through portal administration panel', timestamp: new Date().toISOString(), isCompleted: true, isCurrent: true },
       { status: 'Analyzing', label: 'AI Analyzed', message: 'Vendor details processed and indexed by system intelligence', isCompleted: false, isCurrent: false },
