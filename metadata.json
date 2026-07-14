@@ -1,0 +1,6 @@
+{
+  "name": "Vendor Sync Dashboard",
+  "description": "A streamlined full-stack vendor directory featuring automated inbound WhatsApp and Email brochure extraction powered by Gemini, clean table-based records list, attachment rendering, and direct profile editing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
